@@ -3,11 +3,12 @@ package custom
 import (
 	"bytes"
 	"fmt"
-	"github.com/TwinProduction/gatus/client"
-	"github.com/TwinProduction/gatus/core"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/TwinProduction/gatus/client"
+	"github.com/TwinProduction/gatus/core"
 )
 
 // AlertProvider is the configuration necessary for sending an alert using a custom HTTP request
@@ -73,7 +74,7 @@ func (provider *AlertProvider) buildRequest(serviceName, alertDescription string
 // Send a request to the alert provider and return the body
 func (provider *AlertProvider) Send(serviceName, alertDescription string, resolved bool) ([]byte, error) {
 	request := provider.buildRequest(serviceName, alertDescription, resolved)
-	response, err := client.GetHttpClient().Do(request)
+	response, err := client.GetHttpClient(false).Do(request)
 	if err != nil {
 		return nil, err
 	}

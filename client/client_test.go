@@ -1,13 +1,35 @@
 package client
 
-import "testing"
+import (
+	"net/http"
+	"testing"
+)
 
 func TestGetHttpClient(t *testing.T) {
-	if client != nil {
-		t.Error("client should've been nil since it hasn't been called a single time yet")
-	}
-	_ = GetHttpClient()
+	client := GetHttpClient(false)
 	if client == nil {
-		t.Error("client shouldn't have been nil, since it has been called once")
+		t.Error("GetHttpClient should always return a http.Client")
+	}
+}
+
+func TestGetHttpClient_SkipVerify(t *testing.T) {
+	client := GetHttpClient(true)
+	tr, ok := client.Transport.(*http.Transport)
+	if !ok {
+		t.Error("Transport is not an http.Transport")
+	}
+	if !tr.TLSClientConfig.InsecureSkipVerify {
+		t.Error("Expected InsecureSkipVerify to be true")
+	}
+}
+
+func TestGetHttpClient_NotSkipVerify(t *testing.T) {
+	client := GetHttpClient(false)
+	tr, ok := client.Transport.(*http.Transport)
+	if !ok {
+		t.Error("Transport is not an http.Transport")
+	}
+	if tr.TLSClientConfig.InsecureSkipVerify {
+		t.Error("Expected InsecureSkipVerify to be false")
 	}
 }

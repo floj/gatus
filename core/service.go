@@ -4,18 +4,23 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"github.com/TwinProduction/gatus/client"
 	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"time"
+
+	"github.com/TwinProduction/gatus/client"
 )
 
 var (
 	ErrNoCondition = errors.New("you must specify at least one condition per service")
 	ErrNoUrl       = errors.New("you must specify an url for each service")
 )
+
+type TLS struct {
+	SkipVerify bool `yaml:"skip_verify"`
+}
 
 // Service is the configuration of a monitored endpoint
 type Service struct {
@@ -45,6 +50,7 @@ type Service struct {
 
 	// Alerts is the alerting configuration for the service in case of failure
 	Alerts []*Alert `yaml:"alerts"`
+	TLS    TLS      `yaml:"tls"`
 
 	NumberOfFailuresInARow  int
 	NumberOfSuccessesInARow int
@@ -135,7 +141,7 @@ func (service *Service) getIp(result *Result) {
 func (service *Service) call(result *Result) {
 	request := service.buildRequest()
 	startTime := time.Now()
-	response, err := client.GetHttpClient().Do(request)
+	response, err := client.GetHttpClient(service.TLS.SkipVerify).Do(request)
 	if err != nil {
 		result.Duration = time.Since(startTime)
 		result.Errors = append(result.Errors, err.Error())
